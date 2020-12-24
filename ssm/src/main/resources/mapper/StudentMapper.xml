@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.stu.mapper.StudentMapper" >
+
+    <!--Sql片段-->
+    <sql id="sql_count">stuNo,stuId,stuPwd,stuName,stuAge,stuSex,stuSchool,stuSpecialty,stuPhone,stuAddress,stuDegree,stuPower</sql>
+
+    <!--学生登录-->
+    <select id="doLogin" parameterType="String" resultType="Student">
+        select <include refid="sql_count"/> from t_student
+            <where>
+                <if test="stuId != null">
+                    stuId = #{stuId}
+                </if>
+                <if test="stuPwd != null">
+                    AND stuPwd = #{stuPwd}
+                </if>
+            </where>
+    </select>
+
+    <!--根据学号查询学生信息 前端Ajax需要局部校验（登录 注册 service层校验）-->
+    <select id="queryStuByNo" parameterType="int" resultType="Student">
+        select <include refid="sql_count"/> from t_student
+            <where>
+                <if test="stuNo != 0">
+                    stuNo = #{stuNo}
+                </if>
+            </where>
+    </select>
+
+    <!--根据用户名查询学生信息 前端Ajax需要局部校验（登录 注册 service层校验）-->
+    <select id="queryStuById" parameterType="String" resultType="Student">
+        select <include refid="sql_count"/> from t_student
+            <where>
+                <if test="stuId != null">
+                    stuId = #{stuId}
+                </if>
+            </where>
+    </select>
+
+    <!--根据手机号查询学生信息 注册需要用来校验-->
+    <select id="queryStuByPhone" parameterType="String" resultType="Student">
+        select <include refid="sql_count"/> from t_student
+        <where>
+            <if test="stuPhone != null">
+                stuPhone = #{stuPhone}
+            </if>
+        </where>
+    </select>
+
+    <!--学生注册（添加学生）-->
+    <insert id="stuRegist" parameterType="Student">
+        insert into t_student(<include refid="sql_count"/>)values
+            (#{stuNo},#{stuId},#{stuPwd},#{stuName},#{stuAge},#{stuSex},#{stuSchool},#{stuSpecialty},#{stuPhone},#{stuAddress},#{stuDegree},#{stuPower})
+    </insert>
+
+    <!--删除学生-->
+    <delete id="delStu" parameterType="int">
+        delete from t_student
+            <where>
+                <if test="stuNo != null and stuNo != ''">
+                    stuNo = #{stuNo}
+                </if>
+            </where>
+    </delete>
+
+    <!--分页查询所有学生 -->
+    <select id="queryStuByPage" parameterType="map" resultType="Student">
+	    select <include refid="sql_count"/> from t_student limit #{pageNo},#{pageSize}
+    </select>
+
+    <!--查询所有条数 -->
+    <select id="queryStuCount" resultType="long">
+        select count(*) from t_student
+    </select>
+
+    <!--根据四个条件动态分页查询学生信息-->
+    <select id="queryStuByFourCon" parameterType="map" resultType="Student">
+        select <include refid="sql_count"/> from t_student
+            <where>
+                <if test="stuNo != null and stuNo != ''">
+                    stuNo like concat(concat("%",#{stuNo}),"%")
+                </if>
+                <if test="stuName != null and stuName != ''">
+                    AND stuName like concat(concat("%",#{stuName}),"%")
+                </if>
+                <if test="stuSex != null and stuSex != ''">
+                    AND stuSex = #{stuSex}
+                </if>
+                <if test="stuSchool != null and stuSchool != ''">
+                    AND stuSchool like concat(concat("%",#{stuSchool}),"%")
+                </if>
+            </where>
+            limit #{pageNo},#{pageSize}
+    </select>
+
+    <!--根据四个条件动态所有条数 -->
+    <select id="queryCntByFourCon" resultType="long">
+        select count(*) from t_student
+            <where>
+                <if test="stuNo != null and stuNo != ''">
+                    stuNo like concat(concat("%",#{stuNo}),"%")
+                </if>
+                <if test="stuName != null and stuName != ''">
+                    AND stuName like concat(concat("%",#{stuName}),"%")
+                </if>
+                <if test="stuSex != null and stuSex != ''">
+                    AND stuSex = #{stuSex}
+                </if>
+                <if test="stuSchool != null and stuSchool != ''">
+                    AND stuSchool like concat(concat("%",#{stuSchool}),"%")
+                </if>
+            </where>
+      </select>
+
+    <!--根据学号修改学生信息-->
+    <update id="updateStu" parameterType="Student">
+        update t_student
+        <trim prefix="set" suffixOverrides=",">
+            <if test="stuId != null">
+                stuId = #{stuId},
+            </if>
+            <if test="stuName != null">
+                stuName = #{stuName},
+            </if>
+            <if test="stuAge != null">
+                stuAge = #{stuAge},
+            </if>
+            <if test="stuSex!= null">
+                stuSex = #{stuSex},
+            </if>
+            <if test="stuSchool != null">
+                stuSchool = #{stuSchool},
+            </if>
+            <if test="stuSpecialty != null">
+                stuSpecialty = #{stuSpecialty},
+            </if>
+            <if test="stuPhone != null">
+                stuPhone = #{stuPhone},
+            </if>
+            <if test="stuAddress!= null">
+                stuAddress = #{stuAddress},
+            </if>
+            <if test="stuDegree != null">
+                stuDegree = #{stuDegree},
+            </if>
+        </trim>
+        WHERE stuNo = #{stuNo}
+    </update>
+
+    <!--账号管理 修改用户密码-->
+    <update id="updateStuPwd" parameterType="String">
+        update t_student
+        <trim prefix="set" suffixOverrides=",">
+            <if test="newPwd != null">
+                stuPwd = #{newPwd},
+            </if>
+        </trim>
+        WHERE stuPwd = #{oldPwd}
+    </update>
+
+    <!--账号注销-->
+    <update id="logOutCom" parameterType="int">
+        update t_student
+        <trim prefix="set" suffixOverrides=",">
+            stuPower = "-1",
+        </trim>
+        WHERE stuNo = #{stuNo}
+    </update>
+
+</mapper>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.stu.mapper.AdminMapper" >
+
+    <!--Sql片段-->
+    <sql id="sql_count">adminNo,adminId,adminPwd,adminName,adminPhone,adminSex,adminPower</sql>
+
+    <!--管理员登录-->
+    <select id="doLogin" parameterType="String" resultType="Admin">
+        select <include refid="sql_count"/> from t_admin
+        <where>
+            <if test="adminId != null">
+                adminId = #{adminId}
+            </if>
+            <if test="adminPwd != null">
+                AND adminPwd = #{adminPwd}
+            </if>
+        </where>
+    </select>
+
+    <!--根据管理员编号查询管理员信息-->
+    <select id="queryAdminByNo" parameterType="int" resultType="Admin">
+        select <include refid="sql_count"/> from t_admin
+        <where>
+            <if test="adminNo != 0">
+                adminNo = #{adminNo}
+            </if>
+        </where>
+    </select>
+
+    <!--根据管理员Id查询管理员信息-->
+    <select id="queryAdminById" parameterType="String" resultType="Admin">
+        select <include refid="sql_count"/> from t_admin
+        <where>
+            <if test="adminId != null">
+                adminId = #{adminId}
+            </if>
+        </where>
+    </select>
+
+    <!--根据管理员编号修改管理员信息-->
+    <update id="updateAdmin" parameterType="Admin">
+        update t_admin
+        <trim prefix="set" suffixOverrides=",">
+            <if test="adminId != null">
+                adminId = #{adminId},
+            </if>
+            <if test="adminName != null">
+                adminName = #{adminName},
+            </if>
+            <if test="adminPhone != null">
+                adminPhone = #{adminPhone},
+            </if>
+            <if test="adminSex!= null">
+                adminSex = #{adminSex},
+            </if>
+        </trim>
+        WHERE adminNo = #{adminNo}
+    </update>
+
+    <!--账号管理 修改用户密码-->
+    <update id="updateAdminPwd" parameterType="map">
+        update t_admin
+        <trim prefix="set" suffixOverrides=",">
+            <if test="newPwd != null">
+                adminPwd = #{newPwd},
+            </if>
+        </trim>
+        WHERE adminPwd = #{oldPwd}
+    </update>
+
+</mapper>

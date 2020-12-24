@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.stu.mapper.CompanyMapper" >
+
+    <!--Sql片段-->
+    <sql id="sql_count">comNo,comId,comPwd,comName,comPhone,comAddress,comKind,comNum,comType,comBack,comPower</sql>
+
+    <!--企业登录-->
+    <select id="doLogin" parameterType="String" resultType="Company">
+        select <include refid="sql_count"/> from t_company
+        <where>
+            <if test="comId != null">
+                comId = #{comId}
+            </if>
+            <if test="comPwd != null">
+                AND comPwd = #{comPwd}
+            </if>
+        </where>
+    </select>
+
+    <!--根据企业编号查询企业信息 前端Ajax需要局部校验（登录 注册 service层校验）-->
+    <select id="queryComByNo" parameterType="int" resultType="Company">
+        select <include refid="sql_count"/> from t_company
+        <where>
+            <if test="comNo != 0">
+                comNo = #{comNo}
+            </if>
+        </where>
+    </select>
+
+    <!--根据企业名称查询企业信息 前端Ajax需要局部校验（登录 注册 service层校验）-->
+    <select id="queryComById" parameterType="String" resultType="Company">
+        select <include refid="sql_count"/> from t_company
+        <where>
+            <if test="comId != null">
+                comId = #{comId}
+            </if>
+        </where>
+    </select>
+
+    <!--根据手机号查询企业信息 注册需要用来校验-->
+    <select id="queryComByPhone" parameterType="String" resultType="Company">
+        select <include refid="sql_count"/> from t_company
+        <where>
+            <if test="comPhone != null">
+                comPhone = #{comPhone}
+            </if>
+        </where>
+    </select>
+
+    <!--公司注册（添加公司）-->
+    <insert id="comRegist" parameterType="Company">
+        insert into t_company(<include refid="sql_count"/>)values
+        (#{comNo},#{comId},#{comPwd},#{comName},#{comPhone},#{comAddress},#{comKind},#{comNum},#{comType},#{comBack},#{comPower})
+    </insert>
+
+
+    <!--分页查询所有企业 -->
+    <select id="queryComByPage" parameterType="map" resultType="Company">
+        select <include refid="sql_count"/> from t_company limit #{pageNo},#{pageSize}
+    </select>
+
+    <!--查询所有条数 -->
+    <select id="queryComCount" resultType="long">
+        select count(*) from t_company
+    </select>
+
+    <!--根据五个条件动态分页查询企业信息-->
+    <select id="queryComByFiveCon" parameterType="map" resultType="Company">
+        select <include refid="sql_count"/> from t_company
+        <where>
+            <if test="comNo != null and comNo != ''">
+                comNo like concat(concat("%",#{comNo}),"%")
+            </if>
+            <if test="comName != null and comName != ''">
+                AND comName like concat(concat("%",#{comName}),"%")
+            </if>
+            <if test="comAddress != null and comAddress != ''">
+                AND comAddress like concat(concat("%",#{comAddress}),"%")
+            </if>
+            <if test="comType != null and comType != ''">
+                AND comType like concat(concat("%",#{comType}),"%")
+            </if>
+            <if test="comKind != null and comKind != ''">
+                AND comKind like concat(concat("%",#{comKind}),"%")
+            </if>
+        </where>
+        limit #{pageNo},#{pageSize}
+    </select>
+
+    <!--根据五个条件动态所有条数 -->
+    <select id="queryCntByFiveCon" resultType="long">
+        select count(*) from t_company
+        <where>
+            <if test="comNo != null and comNo != ''">
+                comNo like concat(concat("%",#{comNo}),"%")
+            </if>
+            <if test="comName != null and comName != ''">
+                AND comName like concat(concat("%",#{comName}),"%")
+            </if>
+            <if test="comAddress != null and comAddress != ''">
+                AND comAddress like concat(concat("%",#{comAddress}),"%")
+            </if>
+            <if test="comType != null and comType != ''">
+                AND comType like concat(concat("%",#{comType}),"%")
+            </if>
+            <if test="comKind != null and comKind != ''">
+                AND comKind like concat(concat("%",#{comKind}),"%")
+            </if>
+        </where>
+    </select>
+
+    <!--查询所有企业(企业类型、企业性质) 在企业查询的select下拉框中用到 -->
+    <select id="queryComTypeAndKind" resultType="Company">
+        select <include refid="sql_count"/> from t_company
+    </select>
+
+    <!--删除企业-->
+    <delete id="delCom" parameterType="int">
+        delete from t_company
+        <where>
+            <if test="comNo != null and comNo != ''">
+                comNo = #{comNo}
+            </if>
+        </where>
+    </delete>
+
+    <!--根据企业编号修改企业信息-->
+    <update id="updateCom" parameterType="Company">
+        update t_company
+        <trim prefix="set" suffixOverrides=",">
+            <if test="comId != null">
+                comId = #{comId},
+            </if>
+            <if test="comName != null">
+                comName = #{comName},
+            </if>
+            <if test="comPhone != null">
+                comPhone = #{comPhone},
+            </if>
+            <if test="comAddress!= null">
+                comAddress = #{comAddress},
+            </if>
+            <if test="comKind != null">
+                comKind = #{comKind},
+            </if>
+            <if test="comNum != null">
+                comNum = #{comNum},
+            </if>
+            <if test="comType != null">
+                comType = #{comType},
+            </if>
+            <if test="comBack!= null">
+                comBack = #{comBack},
+            </if>
+        </trim>
+        WHERE comNo = #{comNo}
+    </update>
+
+    <!--账号管理 修改用户密码-->
+    <update id="updateComPwd" parameterType="String">
+        update t_company
+        <trim prefix="set" suffixOverrides=",">
+            <if test="newPwd != null">
+                comPwd = #{newPwd},
+            </if>
+        </trim>
+        WHERE comPwd = #{oldPwd}
+    </update>
+
+    <!--账号注销-->
+    <update id="logOutCom" parameterType="int">
+        update t_company
+        <trim prefix="set" suffixOverrides=",">
+                comPower = "-1",
+        </trim>
+        WHERE comNo = #{comNo}
+    </update>
+
+</mapper>

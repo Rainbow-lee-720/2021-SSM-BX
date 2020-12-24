@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.stu.mapper.EmployMapper" >
+
+    <!--Sql片段-->
+    <sql id="sql_count">empStuNo,empComNo,empName,empSex,empAge,empStuPhone,empDegree,empSchool,empSpecialty,empComName,empPosition,empSalary,empLocation,empDate,empState</sql>
+
+    <!--Sql片段2-->
+    <sql id="sql_count2">empNo,empStuNo,empComNo,empName,empSex,empAge,empStuPhone,empDegree,empSchool,empSpecialty,empComName,empPosition,empSalary,empLocation,empDate,empState</sql>
+
+
+    <!--添加就业信息-->
+    <insert id="addEmploy" parameterType="Employ">
+        insert into t_employ(<include refid="sql_count"/>)values
+        (#{empStuNo},#{empComNo},#{empName},#{empSex},#{empAge},#{empStuPhone},#{empDegree},#{empSchool},#{empSpecialty},#{empComName},#{empPosition},#{empSalary},#{empLocation},now(),0)
+    </insert>
+
+    <!--前端页面删除就业信息-->
+    <delete id="delEmp" parameterType="int">
+        delete from t_employ
+        <where>
+            <if test="empNo != null and empNo != ''">
+                empNo = #{empNo}
+            </if>
+        </where>
+    </delete>
+
+    <!--确认就业 将状态码由0改为1 标识确认就业-->
+    <update id="comfirmEmp" parameterType="int">
+        update t_employ
+        <trim prefix="set" suffixOverrides=",">
+            empState = 1,
+            empDate = now()
+        </trim>
+        WHERE empNo = #{empNo}
+    </update>
+
+    <!--查询所有就业信息 -->
+    <select id="queryAllEmp" resultType="Employ">
+        select <include refid="sql_count2"/> from t_employ WHERE empState = 1
+    </select>
+
+    <!--分页查询所有就业信息 -->
+    <select id="queryEmpByPage" parameterType="map" resultType="Employ">
+        select <include refid="sql_count2"/> from t_employ
+        <where>
+            <if test="stuNo != null and stuNo != ''">
+                empStuNo = #{stuNo}
+            </if>
+        </where>
+        limit #{pageNo},#{pageSize}
+    </select>
+
+    <!--查询所有就业信息条数 -->
+    <select id="queryEmpCount" parameterType="int" resultType="long">
+        select count(*) from t_employ
+        <where>
+            <if test="stuNo != null and stuNo != ''">
+                empStuNo = #{stuNo}
+            </if>
+        </where>
+    </select>
+
+    <!--根据三个条件动态查询就业信息-->
+    <select id="queryEmpByThreeCon" parameterType="map" resultType="Employ">
+        select <include refid="sql_count2"/> from t_employ
+        <where>
+            <if test="stuNo != null and stuNo != ''">
+                empStuNo = #{stuNo}
+            </if>
+            <if test="empComName != null and empComName != ''">
+                AND empComName like concat(concat("%",#{empComName}),"%")
+            </if>
+            <if test="empPosition != null and empPosition != ''">
+                AND empPosition like concat(concat("%",#{empPosition}),"%")
+            </if>
+            <if test="startSalary != null and endSalary != null and endSalary != 0">
+                AND (empSalary &gt;= #{startSalary} and empSalary &lt;= #{endSalary})
+            </if>
+        </where>
+        limit #{pageNo},#{pageSize}
+    </select>
+
+    <!--根据三个条件动态所有条数 -->
+    <select id="queryCntByThreeCon" resultType="long">
+        select count(*) from t_employ
+        <where>
+            <if test="stuNo != null and stuNo != ''">
+                empStuNo = #{stuNo}
+            </if>
+            <if test="empComName != null and empComName != ''">
+                AND empComName like concat(concat("%",#{empComName}),"%")
+            </if>
+            <if test="empPosition != null and empPosition != ''">
+                AND empPosition like concat(concat("%",#{empPosition}),"%")
+            </if>
+            <if test="startSalary != null and endSalary != null and endSalary != 0">
+                AND (empSalary &gt;= #{startSalary} and empSalary &lt;= #{endSalary})
+            </if>
+        </where>
+    </select>
+
+    <!--校验是否已经确认就业-->
+    <select id="queryEmpByStuNoState" parameterType="int" resultType="Employ">
+        select <include refid="sql_count2"/> from t_employ
+        <where>
+            <if test="empStuNo != 0">
+                empStuNo = #{empStuNo}
+            </if>
+            AND empState = 1
+        </where>
+    </select>
+
+    <!--查询薪资在3000以下的条数 -->
+    <select id="queryEmpSalaryCount1" resultType="Integer">
+        select count(*) from t_employ where empSalary &lt;= 3000 AND empState = 1
+    </select>
+
+    <!--查询薪资在3001-5000的条数 -->
+    <select id="queryEmpSalaryCount2" resultType="Integer">
+        select count(*) from t_employ where empSalary between 3001 and 5000 AND empState = 1
+    </select>
+
+    <!--查询薪资在5001-7000的条数 -->
+    <select id="queryEmpSalaryCount3" resultType="Integer">
+        select count(*) from t_employ where empSalary between 5001 and 7000 AND empState = 1
+    </select>
+
+    <!--查询薪资在7001-10000的条数 -->
+    <select id="queryEmpSalaryCount4" resultType="Integer">
+        select count(*) from t_employ where empSalary between 7001 and 10000 AND empState = 1
+    </select>
+
+    <!--查询薪资在10000以上的条数 -->
+    <select id="queryEmpSalaryCount5" resultType="Integer">
+        select count(*) from t_employ where empSalary &gt; 10000 AND empState = 1
+    </select>
+
+    <!--根据企业编号查询就业信息-->
+    <select id="queryEmpByComNo" parameterType="int" resultType="Employ">
+        select <include refid="sql_count"/> from t_employ
+        <where>
+            <if test="empComNo != 0">
+                empComNo = #{empComNo}
+            </if>
+        </where>
+    </select>
+
+    <!--//根据学号查询就业信息-->
+    <select id="queryEmpByStuNo" parameterType="int" resultType="Employ">
+        select <include refid="sql_count"/> from t_employ
+        <where>
+            <if test="empStuNo != 0">
+                empStuNo = #{empStuNo}
+            </if>
+        </where>
+    </select>
+
+</mapper>

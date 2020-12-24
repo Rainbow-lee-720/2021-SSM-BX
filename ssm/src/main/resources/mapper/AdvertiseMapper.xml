@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.stu.mapper.AdvertiseMapper" >
+    <!--Sql片段-->
+    <sql id="sql_count">adverComNo,adverComName,adverComPhone,adverComAddress,adverPosition,adverCount,adverSalary,adverLocation,adverRequire,adverDate</sql>
+    <!--Sql新增片段-->
+    <sql id="sql_countNew">adverNo,adverComNo,adverComName,adverComPhone,adverComAddress,adverPosition,adverCount,adverSalary,adverLocation,adverRequire,adverDate</sql>
+
+    <!--添加招聘信息-->
+    <insert id="addAdvertise" parameterType="Advertise">
+        insert into t_advertise(<include refid="sql_count"/>)values
+        (#{adverComNo},#{adverComName},#{adverComPhone},#{adverComAddress},#{adverPosition},#{adverCount},#{adverSalary},#{adverLocation},#{adverRequire},now())
+    </insert>
+
+    <!--根据企业编号查询招聘信息-->
+    <select id="queryAdverByNo" parameterType="int" resultType="Advertise">
+        select <include refid="sql_count"/> from t_advertise
+        <where>
+            <if test="adverComNo != 0">
+                adverComNo = #{adverComNo}
+            </if>
+        </where>
+    </select>
+
+    <!--根据招聘信息编号修改招聘信息-->
+    <update id="updateAdvertise" parameterType="Advertise">
+        update t_advertise
+        <trim prefix="set" suffixOverrides=",">
+            <if test="adverComName != null">
+                adverComName = #{adverComName},
+            </if>
+            <if test="adverComPhone != null">
+                adverComPhone = #{adverComPhone},
+            </if>
+            <if test="adverComAddress!= null">
+                adverComAddress = #{adverComAddress},
+            </if>
+            <if test="adverPosition != null">
+                adverPosition = #{adverPosition},
+            </if>
+            <if test="adverCount != null">
+                adverCount = #{adverCount},
+            </if>
+            <if test="adverSalary != null">
+                adverSalary = #{adverSalary},
+            </if>
+            <if test="adverLocation != null">
+                adverLocation = #{adverLocation},
+            </if>
+            <if test="adverRequire != null">
+                adverRequire = #{adverRequire},
+            </if>
+            adverDate = now()
+        </trim>
+        WHERE adverNo = #{adverNo}
+    </update>
+
+    <!--根据企业编号查询招聘信息-->
+    <select id="queryAdverByComNo" parameterType="int" resultType="Advertise">
+        select <include refid="sql_count"/> from t_advertise
+        <where>
+            <if test="adverComNo != 0">
+                adverComNo = #{adverComNo}
+            </if>
+        </where>
+    </select>
+
+    <!--删除招聘信息-->
+    <delete id="delAdver" parameterType="int">
+        delete from t_advertise
+        <where>
+            <if test="adverNo != null and adverNo != ''">
+                adverNo = #{adverNo}
+            </if>
+        </where>
+    </delete>
+
+    <!--分页查询所有招聘信息 -->
+    <select id="queryAdverByPage" parameterType="map" resultType="Advertise">
+        select <include refid="sql_count"/> from t_advertise
+        <where>
+            adverCount &gt; 0
+        </where>
+        limit #{pageNo},#{pageSize}
+    </select>
+
+    <!--查询所有条数 -->
+    <select id="queryAdverCount" resultType="long">
+        select count(*) from t_advertise
+        <where>
+            adverCount &gt; 0
+        </where>
+    </select>
+
+    <!--根据三个条件动态分页查询企业招聘信息-->
+    <select id="queryAdverByThreeCon" parameterType="map" resultType="Advertise">
+        select <include refid="sql_count"/> from t_advertise
+        <where>
+            <if test="adverComNo != null and adverComNo != ''">
+                adverComNo like concat(concat("%",#{adverComNo}),"%")
+            </if>
+            <if test="adverComName != null and adverComName != ''">
+                AND adverComName like concat(concat("%",#{adverComName}),"%")
+            </if>
+            <if test="adverLocation != null and adverLocation != ''">
+                AND adverLocation like concat(concat("%",#{adverLocation}),"%")
+            </if>
+                AND adverCount &gt; 0
+        </where>
+        limit #{pageNo},#{pageSize}
+    </select>
+
+    <!--根据三个条件动态所有条数 -->
+    <select id="queryCntByThreeCon" resultType="long">
+        select count(*) from t_advertise
+        <where>
+            <if test="adverComNo != null and adverComNo != ''">
+                adverComNo like concat(concat("%",#{adverComNo}),"%")
+            </if>
+            <if test="adverComName != null and adverComName != ''">
+                AND adverComName like concat(concat("%",#{adverComName}),"%")
+            </if>
+            <if test="adverLocation != null and adverLocation != ''">
+                AND adverLocation like concat(concat("%",#{adverLocation}),"%")
+            </if>
+                AND adverCount &gt; 0
+        </where>
+    </select>
+
+    <!--修改招聘人数-->
+    <update id="updateAdverCount" parameterType="Advertise">
+        update t_advertise
+        <trim prefix="set" suffixOverrides=",">
+            <if test="adverCount != null">
+                adverCount = #{adverCount},
+            </if>
+            adverDate = now()
+        </trim>
+        WHERE adverComNo = #{adverComNo}
+    </update>
+
+    <!--就业推荐 -->
+    <select id="queryAdverByPageAdvise" parameterType="map" resultType="Advertise">
+        select <include refid="sql_count"/> from t_advertise
+        <where>
+            <if test="interPosition != null and interPosition != ''">
+                adverPosition like concat(concat("%",#{interPosition}),"%")
+            </if>
+            <if test="stuAddress != null and stuAddress != ''">
+                AND adverLocation like concat(concat("%",#{stuAddress}),"%")
+            </if>
+                AND adverCount &gt; 0
+        </where>
+        limit #{pageNo},#{pageSize}
+    </select>
+
+    <!--就业推荐条数 -->
+    <select id="queryAdverAdviseCount" resultType="long">
+        select count(*) from t_advertise
+        <where>
+            <if test="interPosition != null and interPosition != ''">
+                adverPosition like concat(concat("%",#{interPosition}),"%")
+            </if>
+            <if test="stuAddress != null and stuAddress != ''">
+                AND adverLocation like concat(concat("%",#{stuAddress}),"%")
+            </if>
+                AND adverCount &gt; 0
+        </where>
+    </select>
+
+
+    <!--企业模块-分页展示所有招聘信息-->
+    <select id="queryAdverByPageNew" parameterType="map" resultType="Advertise">
+        select <include refid="sql_countNew"/> from t_advertise
+        <where>
+            adverCount &gt; 0 AND adverComNo = #{adverComNo}
+        </where>
+        limit #{pageNo},#{pageSize}
+    </select>
+
+    <!--企业模块-分页展示所有招聘信息 查询所有条数 -->
+    <select id="queryAdverCountNew" resultType="long">
+        select count(*) from t_advertise
+        <where>
+            adverCount &gt; 0 AND adverComNo = #{adverComNo}
+        </where>
+    </select>
+
+    <!--企业模块-根据三个条件查询-->
+    <select id="queryAdverByThreeConNew" parameterType="map" resultType="Advertise">
+        select <include refid="sql_countNew"/> from t_advertise
+        <where>
+            <if test="adverComNo != null and adverComNo != ''">
+                adverComNo = #{adverComNo}
+            </if>
+            <if test="adverPosition != null and adverPosition != ''">
+                AND adverPosition like concat(concat("%",#{adverPosition}),"%")
+            </if>
+            <if test="adverLocation != null and adverLocation != ''">
+                AND adverLocation like concat(concat("%",#{adverLocation}),"%")
+            </if>
+            <if test="startSalary != null and endSalary != null and endSalary != 0">
+                AND (adverSalary &gt;= #{startSalary} and adverSalary &lt;= #{endSalary})
+            </if>
+        </where>
+        limit #{pageNo},#{pageSize}
+    </select>
+
+    <!--企业模块-根据三个条件查询条数 -->
+    <select id="queryCntByThreeConNew" resultType="long">
+        select count(*) from t_advertise
+        <where>
+            <if test="adverComNo != null and adverComNo != ''">
+                adverComNo = #{adverComNo}
+            </if>
+            <if test="adverPosition != null and adverPosition != ''">
+                AND adverPosition like concat(concat("%",#{adverPosition}),"%")
+            </if>
+            <if test="adverLocation != null and adverLocation != ''">
+                AND adverLocation like concat(concat("%",#{adverLocation}),"%")
+            </if>
+            <if test="startSalary != null and endSalary != null and endSalary != 0">
+                AND (adverSalary &gt;= #{startSalary} and adverSalary &lt;= #{endSalary})
+            </if>
+        </where>
+    </select>
+
+    <!--根据招聘编号查询招聘信息-->
+    <select id="updateAdverBefore" parameterType="int" resultType="Advertise">
+        select <include refid="sql_countNew"/> from t_advertise
+        <where>
+            <if test="adverNo != 0">
+                adverNo = #{adverNo}
+            </if>
+        </where>
+    </select>
+
+</mapper>

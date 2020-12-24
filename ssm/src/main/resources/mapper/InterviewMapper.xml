@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.stu.mapper.InterviewMapper" >
+
+    <!--Sql片段-->
+    <sql id="sql_count">interStuNo,interComNo,interName,interSex,interAge,interSpecialty,interSchool,interDegree,interPhone,interPosition,interSalary,interLocation,interDate</sql>
+
+    <!--添加求职信息-->
+    <insert id="addInterview" parameterType="Interview">
+        insert into t_interview(<include refid="sql_count"/>)values
+        (#{interStuNo},null,#{interName},#{interSex},#{interAge},#{interSpecialty},#{interSchool},#{interDegree},#{interPhone},#{interPosition},#{interSalary},#{interLocation},now())
+    </insert>
+
+    <!--根据学号修改求职信息-->
+    <update id="updateInterview" parameterType="Interview">
+        update t_interview
+        <trim prefix="set" suffixOverrides=",">
+            <if test="interName != null">
+                interName = #{interName},
+            </if>
+            <if test="interSex != null">
+                interSex = #{interSex},
+            </if>
+            <if test="interAge!= null">
+                interAge = #{interAge},
+            </if>
+            <if test="interSpecialty != null">
+                interSpecialty = #{interSpecialty},
+            </if>
+            <if test="interSchool != null">
+                interSchool = #{interSchool},
+            </if>
+            <if test="interDegree != null">
+                interDegree = #{interDegree},
+            </if>
+            <if test="interPhone!= null">
+                interPhone = #{interPhone},
+            </if>
+            <if test="interPosition != null">
+                interPosition = #{interPosition},
+            </if>
+            <if test="interSalary!= null">
+                interSalary = #{interSalary},
+            </if>
+            <if test="interLocation != null">
+                interLocation = #{interLocation},
+            </if>
+                interDate = now(),
+        </trim>
+        WHERE interStuNo = #{interStuNo}
+    </update>
+
+    <!--根据学号查询求职信息-->
+    <select id="queryInterByStuNo" parameterType="int" resultType="Interview">
+        select <include refid="sql_count"/> from t_interview
+        <where>
+            <if test="interStuNo != 0">
+                interStuNo = #{interStuNo}
+            </if>
+        </where>
+    </select>
+
+    <!--删除求职信息-->
+    <delete id="delInter" parameterType="int">
+        delete from t_interview
+        <where>
+            <if test="interStuNo != null and interStuNo != ''">
+                interStuNo = #{interStuNo}
+            </if>
+        </where>
+    </delete>
+
+    <!--根据学生编号、企业编号模糊查询求职信息 用于校验此企业是否已经被申请过-->
+    <select id="queryInterByStuNoComNo" parameterType="map" resultType="Interview">
+        select <include refid="sql_count"/> from t_interview
+        <where>
+            <if test="interStuNo != null and interStuNo != ''">
+                interStuNo = #{interStuNo}
+            </if>
+            <if test="interComNo != null and interComNo != ''">
+                AND interComNo like concat(concat("%",#{interComNo}),"%")
+            </if>
+        </where>
+    </select>
+
+    <!--求职操作 将申请求职的企业编号修改进interview表中的interComNo中-->
+    <update id="findJob" parameterType="map">
+        update t_interview
+        <trim prefix="set" suffixOverrides=",">
+            <if test="interComNo != null">
+                interComNo = #{interComNo},
+            </if>
+            <if test="interDate != null">
+                interDate = now(),
+            </if>
+        </trim>
+        WHERE interStuNo = #{interStuNo}
+    </update>
+
+    <!--分页查询所有求职信息 -->
+    <select id="queryInterByPage" parameterType="map" resultType="Interview">
+        select <include refid="sql_count"/> from t_interview
+            where  interComNo like concat(concat("%",#{interComNo}),"%")
+                limit #{pageNo},#{pageSize}
+    </select>
+
+    <!--查询所有求职信息条数 -->
+    <select id="queryInterCount" resultType="long">
+        select count(*) from t_interview
+              where  interComNo like concat(concat("%",#{interComNo}),"%")
+    </select>
+
+    <!--根据四个条件动态查询求职信息-->
+    <select id="queryInterByFourCon" parameterType="map" resultType="Interview">
+
+        select <include refid="sql_count"/> from t_interview
+        <where>
+            <if test="comNo != null and comNo != ''">
+                interComNo like concat(concat("%",#{comNo}),"%")
+            </if>
+            <if test="interSex != null and interSex != ''">
+                AND interSex = #{interSex}
+            </if>
+            <if test="interDegree != null and interDegree != ''">
+                AND interDegree = #{interDegree}
+            </if>
+            <if test="interLocation != null and interLocation != ''">
+                AND interLocation like concat(concat("%",#{interLocation}),"%")
+            </if>
+            <if test="startSalary != null and endSalary != null and endSalary != 0">
+                AND (interSalary &gt;= #{startSalary} and interSalary &lt;= #{endSalary})
+            </if>
+        </where>
+        limit #{pageNo},#{pageSize}
+    </select>
+
+    <!--根据四个条件动态所有条数 -->
+    <select id="queryCntByFourCon" resultType="long">
+        select count(*) from t_interview
+        <where>
+            <if test="comNo != null and comNo != ''">
+                interComNo like concat(concat("%",#{comNo}),"%")
+            </if>
+            <if test="interSex != null and interSex != ''">
+                AND interSex = #{interSex}
+            </if>
+            <if test="interDegree != null and interDegree != ''">
+                AND interDegree = #{interDegree}
+            </if>
+            <if test="interLocation != null and interLocation != ''">
+                AND interLocation = #{interLocation}
+            </if>
+            <if test="startSalary != null and endSalary != null and endSalary != 0">
+                AND interSalary between #{startSalary} and #{endSalary}
+            </if>
+        </where>
+    </select>
+
+    <!--根据学号、企业编号查询学生求职信息-->
+    <select id="queryInterInfo" parameterType="int" resultType="Interview">
+        select <include refid="sql_count"/> from t_interview
+        <where>
+            <if test="interStuNo != null and interStuNo != ''">
+                interStuNo = #{interStuNo}
+            </if>
+            <if test="interComNo != null and interComNo != ''">
+                AND interComNo like concat(concat("%",#{interComNo}),"%")
+            </if>
+        </where>
+    </select>
+
+</mapper>
